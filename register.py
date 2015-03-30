@@ -17,7 +17,6 @@ class exControlReg:
 	def __init__(self):
 		self.ALUSrc = register()
 		self.ALUOp = register()
-		self.RegDst = register()
 		
 	def clkRaiseEdge(self):
 		self.ALUSrc.clkRaiseEdge()
@@ -27,10 +26,9 @@ class exControlReg:
 	def printReg(self):
 		print("Ex control signals: \n\tALUSRC: "+str(self.ALUSrc))
 		print("\tALUOp: "+str(self.ALUOp))
-		print("\tRegDst: "+str(self.RegDst))
 		
 	def __str__(self):
-		return("ALUSRC: "+str(self.ALUSrc)+", ALUOp: "+str(self.ALUOp)+", RegDst: "+str(self.RegDst))
+		return("ALUSRC: "+str(self.ALUSrc)+", ALUOp: "+str(self.ALUOp))
 		
 		
 class memControlReg:
@@ -53,16 +51,16 @@ class memControlReg:
 class wbControlReg:
 	def __init__(self):
 		self.RegWrite = register()
-		self.MemSelect = register()
+		self.MemtoReg = register()
 		
 	def clkRaiseEdge(self):
 		self.RegWrite.clkRaiseEdge()
-		self.MemSelect.clkRaiseEdge()
+		self.MemtoReg.clkRaiseEdge()
 		
 	def printReg(self):
 		print("WB control signals: \n\tRegWrite: "+str(self.RegWrite))
-		print("\tMemSelect: "+str(self.MemSelect))
+		print("\tMemtoReg: "+str(self.MemtoReg))
 		
 	def __str__(self):
-		return ("RegWrite: "+str(self.RegWrite)+", MemSelect: "+str(self.MemSelect))
+		return ("RegWrite: "+str(self.RegWrite)+", MemtoReg: "+str(self.MemtoReg))
 		
