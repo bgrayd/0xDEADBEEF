@@ -20,16 +20,16 @@ class instrDecodeExeReg:
 		
 	#send the raising clock edge to each register
 	def clkRaiseEdge(self):
-		self.EX.clkRaise()
-		self.Mem.clkRaise()
-		self.WB.clkRaise() 
+		self.EX.clkRaiseEdge()
+		self.Mem.clkRaiseEdge()
+		self.WB.clkRaiseEdge() 
 		
-		self.PC.clkRaise()		#we might be able to remove the PC
-		self.regData1.clkRaise()
-		self.regData2.clkRaise()
-		self.rs.clkRaise()
-		self.rt.clkRaise()
-		self.rd.clkRaise()		#rd is also the immediate
+		self.PC.clkRaiseEdge()		#we might be able to remove the PC
+		self.regData1.clkRaiseEdge()
+		self.regData2.clkRaiseEdge()
+		self.rs.clkRaiseEdge()
+		self.rt.clkRaiseEdge()
+		self.rd.clkRaiseEdge()		#rd is also the immediate
 		
 	def __str__(self):
 		return str("EX ctrlReg: "+str(self.EX)+", Mem ctrlReg: "+str(self.Mem)+", WB ctrlReg: "+str(self.WB)+", PC: "+str(self.PC)+", Data Register1: "+str(self.regData1)+", Data Register2: "+str(self.regData2)+", RS: "+str(self.rs)+", RT: "+str(self.rt)+", RD: "+str(self.rd))

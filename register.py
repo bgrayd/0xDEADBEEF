@@ -22,7 +22,6 @@ class exControlReg:
 	def clkRaiseEdge(self):
 		self.ALUSrc.clkRaiseEdge()
 		self.ALUOp.clkRaiseEdge()
-		self.RegDst.clkRaiseEdge()
 		
 	def printReg(self):
 		print("Ex control signals: \n\tALUSRC: "+str(self.ALUSrc))

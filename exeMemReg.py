@@ -16,8 +16,8 @@ class exeMemReg:
 		
 	#send the raising clock edge to each register
 	def clkRaiseEdge(self):
-		self.Mem.clkRaise()
-		self.WB.clkRaise()
+		self.Mem.clkRaiseEdge()
+		self.WB.clkRaiseEdge()
 		
 		self.PCBranch.clkRaiseEdge()		#This can probably be removed
 		self.ALUResult.clkRaiseEdge()
