@@ -13,6 +13,7 @@ class register:
 	def clkRaiseEdge(self):
 		self.output = self.input
 		
+		
 class exControlReg:
 	def __init__(self):
 		self.ALUSrc = register()

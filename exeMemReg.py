@@ -1,4 +1,4 @@
-from register.py import *
+from register import *
 
 ################################################
 #Class that simulates the registers between the

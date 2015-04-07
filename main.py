@@ -1,8 +1,8 @@
-from register.py import *
-from instrFetchDecodeReg.py import *
-from instrDecodeExeReg.py import *
-from exeMemReg.py import *
-from memWBReg.py import *
+from register import *
+from instrFetchInstrDecodeReg import *
+from instrDecodeExeReg import *
+from exeMemReg import *
+from memWBReg import *
 
 def mux(controlSignal, *inputs):
 	return inputs[controlSignal]
@@ -41,7 +41,7 @@ def control(opcode):
 		(0,0,1,0,1,1,0,1,1):0b1110, #lw
 		(1,0,1,0,0,0,0,0,0):0b1111,	#j
 		}
-	return Instructions[opcode]
+	return Instructions[int(opcode)]
 	
 	
 def simulateProcessor(a_instrcMem, a_dataMem):
@@ -61,14 +61,14 @@ def simulateProcessor(a_instrcMem, a_dataMem):
 		#This is the Instruction Fetch Stage
 		#############################################
 		IF_ID.PC.input = PC.output+1
-		IF_ID.Instruction.input = a_instrcMem[PC]
+		IF_ID.Instruction.input = a_instrcMem[int(PC.output)]
 		
 		#############################################
 		#This is the part of the Write Back Stage
 		# it cheats and gets to go early
 		#############################################
 		if(MEM_WB.WB.RegWrite.output == 1):
-			Registers[MEM_WB.regWriteAddr.output] = mux(MEM_WB.WB.MemtoReg.output, MEM_WB.readData.output, MEM_WB.ALUResult.output)
+			Registers[int(MEM_WB.regWriteAddr.output)] = mux(MEM_WB.WB.MemtoReg.output, MEM_WB.readData.output, MEM_WB.ALUResult.output)
 		
 		#############################################
 		#This is the Instruction Decode Stage
@@ -82,12 +82,22 @@ def simulateProcessor(a_instrcMem, a_dataMem):
 		readData1 = Registers[rt]
 		readData2 = Registers[mux(regDst, rd, rs)]
 		
+		branch = ((opcode&0x1)^(readData1 == readData2)) & branch
+		
 		branchAddr = (IF_ID.PC.output & 0xfff0) | (rd & 0x000f)
 		jumpAddr = (((rs<<8) &0x0f00)|((rt<<4)&0x00f0)|(rd&0x000f))
+		newAddr = mux(jump, branchAddr, jumpAddr)
 		
 		ID_EX.rs.input = rs
 		ID_EX.rt.input = rt
 		ID_EX.rd.input = rd
+		
+		#############################################
+		#This is the part of the Instruction Fetch Stage
+		# it is now so that it can do branching and jumping
+		#############################################
+		PC.input = mux(branch&jump, IF_ID.PC.output, newAddr)
+		
 		
 		#############################################
 		#This is the Execute Stage
@@ -110,3 +120,8 @@ def simulateProcessor(a_instrcMem, a_dataMem):
 		ID_EX.clkRaiseEdge()
 		EX_MEM .clkRaiseEdge()
 		MEM_WB.clkRaiseEdge()
+
+a_instrcMem = [0,0,0,0,0,0,0,0,0]
+a_dataMem = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+
+simulateProcessor(a_instrcMem, a_dataMem)

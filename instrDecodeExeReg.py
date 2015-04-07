@@ -1,4 +1,4 @@
-from register.py import *
+from register import *
 
 ################################################
 #Class that simulates the registers between the
@@ -7,7 +7,7 @@ from register.py import *
 ################################################
 class instrDecodeExeReg:
 	def __init__(self):
-		self.EX = exContolReg()
+		self.EX = exControlReg()
 		self.Mem = memControlReg()
 		self.WB = wbControlReg()
 		
