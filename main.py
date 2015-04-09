@@ -84,7 +84,7 @@ def simulateProcessor(a_instrcMem, a_dataMem):
 		
 		branch = ((opcode&0x1)^(readData1 == readData2)) & branch
 		
-		branchAddr = (IF_ID.PC.output & 0xfff0) | (rd & 0x000f)
+		branchAddr = (IF_ID.PC.output & 0xffff) + (rd & 0x000f)
 		jumpAddr = (((rs<<8) &0x0f00)|((rt<<4)&0x00f0)|(rd&0x000f))
 		newAddr = mux(jump, branchAddr, jumpAddr)
 		
