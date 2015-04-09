@@ -62,7 +62,7 @@ def simulateProcessor(a_instrcMem, a_dataMem):
 		#############################################
 		IF_ID.PC.input = PC.output+1
 		IF_ID.Instruction.input = a_instrcMem[int(PC.output)]
-		print(PC.output)
+		
 		#############################################
 		#This is the part of the Write Back Stage
 		# it cheats and gets to go early
@@ -120,8 +120,19 @@ def simulateProcessor(a_instrcMem, a_dataMem):
 		ID_EX.clkRaiseEdge()
 		EX_MEM .clkRaiseEdge()
 		MEM_WB.clkRaiseEdge()
+		
+		PC.printReg()
+		IF_ID.printReg()
+		ID_EX.printReg()
+		EX_MEM .printReg()
+		MEM_WB.printReg()
 
-a_instrcMem = [0,0,0,0,0,0,0,0,0]
+a_instrcMem = [0x8FFF, 0xB114,0x8201, 0xB228, 0x8221, 0xB224, 0x830F, 
+	0xB434, 0x8500, 0x8601, 0xB664, 0x8705, 0x6807, 0xA804, 0x0000, 
+	0xF02A, 0x0000, 0x8B01, 0x277B, 0xE560, 0x8801, 0xB888, 0x6985, 
+	0x990A, 0x0000, 0xC113, 0x3221, 0x8A0F, 0xBAA4, 0xDA60, 0xF028, 
+	0x0000, 0xB332, 0x4443, 0x8A0F, 0xDA60, 0x8662, 0xF00C, 0x0000]
+	
 a_dataMem = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 
 simulateProcessor(a_instrcMem, a_dataMem)
