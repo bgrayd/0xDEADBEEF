@@ -13,6 +13,9 @@ class register:
 	def clkRaiseEdge(self):
 		self.output = self.input
 		
+	def printReg(self):
+		print(str(self.input)+" -> "+str(self.output))
+		
 		
 class exControlReg:
 	def __init__(self):
