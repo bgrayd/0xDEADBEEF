@@ -4,6 +4,28 @@ from instrDecodeExeReg import *
 from exeMemReg import *
 from memWBReg import *
 
+def alu(aluop, aluA, aluB):
+        if aluop == 0:          #Add
+                value = aluA + aluB
+        else if aluop == 1:     #Sub
+                value = aluA - aluB
+        else if aluop == 2:     #Or
+                value = aluA | aluB
+        else if aluop == 3:     #XOR
+                value = aluA ^ aluB
+        else if aluop == 4:     #And
+                value = aluA & aluB
+        else if aluop == 5:     #<
+                if aluA < aluB:
+                        value = 1
+                else:
+                        value = 0
+        else if aluop == 6:     #<<
+                value = aluA << aluB
+        else if aluop == 7:     #>>
+                value = aluA >> aluB
+        return value
+
 def mux(controlSignal, *inputs):
 	return inputs[controlSignal]
 
