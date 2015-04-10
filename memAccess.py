@@ -2,13 +2,12 @@
 
 
 
-def MemAccess(writeEnable, readEnable, readAddress, writeAddress, writeData, a_dataMem)
-
+def MemAccess(writeEnable, readEnable, address, writeData, a_dataMem):
 	if writeEnable == 1:
-		a_dataMem[writeAddress] = writeData
+		a_dataMem[address] = writeData
 		
 	if readEnable == 1:
-		return a_dataMem[readAddress]
+		return a_dataMem[address]
 		
 		
 	

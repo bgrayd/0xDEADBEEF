@@ -4,25 +4,27 @@ from instrDecodeExeReg import *
 from exeMemReg import *
 from memWBReg import *
 
+from memAccess import *
+
 def alu(aluop, aluA, aluB):
         if aluop == 0:          #Add
                 value = aluA + aluB
-        else if aluop == 1:     #Sub
+        elif aluop == 1:     #Sub
                 value = aluA - aluB
-        else if aluop == 2:     #Or
+        elif aluop == 2:     #Or
                 value = aluA | aluB
-        else if aluop == 3:     #XOR
+        elif aluop == 3:     #XOR
                 value = aluA ^ aluB
-        else if aluop == 4:     #And
+        elif aluop == 4:     #And
                 value = aluA & aluB
-        else if aluop == 5:     #<
+        elif aluop == 5:     #<
                 if aluA < aluB:
                         value = 1
                 else:
                         value = 0
-        else if aluop == 6:     #<<
+        elif aluop == 6:     #<<
                 value = aluA << aluB
-        else if aluop == 7:     #>>
+        elif aluop == 7:     #>>
                 value = aluA >> aluB
         return value
 
@@ -113,6 +115,8 @@ def simulateProcessor(a_instrcMem, a_dataMem):
 		ID_EX.rs.input = rs
 		ID_EX.rt.input = rt
 		ID_EX.rd.input = rd
+		ID_EX.regData1.input = readData1
+		ID_EX.regData2.input = readData2
 		
 		#############################################
 		#This is the part of the Instruction Fetch Stage
@@ -124,11 +128,18 @@ def simulateProcessor(a_instrcMem, a_dataMem):
 		#############################################
 		#This is the Execute Stage
 		#############################################
+		EX_MEM.ALUResult.input = alu(ID_EX.EX.ALUOp.output, ID_EX.regData1.output, mux(ID_EX.EX.ALUSrc.output, ID_EX.regData2.output, ID_EX.rs.output))
+		
+		EX_MEM.Mem.input = ID_EX.Mem.output
+		EX_MEM.WB.input = ID_EX.WB.output
+		EX_MEM.regData2.input = ID_EX.regData2.output
+		EX_MEM.regWriteAddr.input = ID_EX.rs.output		
 		
 		
 		#############################################
 		#This is the Memory Stage
 		#############################################
+		MEM_WB.readData.input = MemAccess(EX_MEM.Mem.MemWrite, EX_MEM.Mem.MemRead, EX_MEM.ALUResult.output, EX_MEM.regData2.output, a_dataMem)
 		
 		
 		#############################################
