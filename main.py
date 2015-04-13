@@ -6,27 +6,30 @@ from memWBReg import *
 
 from memAccess import *
 
+import time
+
 def alu(aluop, aluA, aluB):
-        if aluop == 0:          #Add
-                value = aluA + aluB
-        elif aluop == 1:     #Sub
-                value = aluA - aluB
-        elif aluop == 2:     #Or
-                value = aluA | aluB
-        elif aluop == 3:     #XOR
-                value = aluA ^ aluB
-        elif aluop == 4:     #And
-                value = aluA & aluB
-        elif aluop == 5:     #<
-                if aluA < aluB:
-                        value = 1
-                else:
-                        value = 0
-        elif aluop == 6:     #<<
-                value = aluA << aluB
-        elif aluop == 7:     #>>
-                value = aluA >> aluB
-        return value
+	if aluop == 0:          #Add
+		value = aluA + aluB
+	elif aluop == 1:     #Sub
+		value = aluA - aluB
+	elif aluop == 2:     #Or
+		value = aluA | aluB
+	elif aluop == 3:     #XOR
+		value = aluA ^ aluB
+	elif aluop == 4:     #And
+		value = aluA & aluB
+	elif aluop == 5:     #<
+		if aluA < aluB:
+			value = 1
+		else:
+			value = 0
+	elif aluop == 6:     #<<
+		value = aluA << aluB
+	elif aluop == 7:     #>>
+		value = aluA >> aluB
+	# print("ALUOp:"+str(aluop)+" ALUa:"+str(aluA)+" ALUb:"+str(aluB)+" value:"+str(value))
+	return value
 
 def mux(controlSignal, *inputs):
 	return inputs[controlSignal]
@@ -65,6 +68,7 @@ def control(opcode):
 		0b1110:(0,0,1,0,1,1,0,1,1), #lw
 		0b1111:(1,0,1,0,0,0,0,0,0),	#j
 		}
+	# print(str(opcode)+":"+str(Instructions[opcode]))
 	return Instructions[opcode]
 	
 	
@@ -92,7 +96,8 @@ def simulateProcessor(a_instrcMem, a_dataMem):
 		# it cheats and gets to go early
 		#############################################
 		if(MEM_WB.WB.RegWrite.output == 1):
-			Registers[int(MEM_WB.regWriteAddr.output)] = mux(MEM_WB.WB.MemtoReg.output, MEM_WB.readData.output, MEM_WB.ALUResult.output)
+			Registers[int(MEM_WB.regWriteAddr.output)] = mux(int(MEM_WB.WB.MemtoReg.output), MEM_WB.ALUResult.output, MEM_WB.readData.output)
+			# print(str(int(MEM_WB.regWriteAddr.output))+" : "+str(mux(int(MEM_WB.WB.MemtoReg.output), MEM_WB.ALUResult.output, MEM_WB.readData.output)))
 		
 		#############################################
 		#This is the Instruction Decode Stage
@@ -107,7 +112,6 @@ def simulateProcessor(a_instrcMem, a_dataMem):
 		readData2 = Registers[mux(regDst, rd, rs)]
 		
 		branch = ((opcode&0x1)^(readData1 == readData2)) & branch
-		
 		branchAddr = (IF_ID.PC.output & 0xffff) + (rd & 0x000f)
 		jumpAddr = (((rs<<8) &0x0f00)|((rt<<4)&0x00f0)|(rd&0x000f))
 		newAddr = mux(jump, branchAddr, jumpAddr)
@@ -122,16 +126,18 @@ def simulateProcessor(a_instrcMem, a_dataMem):
 		#This is the part of the Instruction Fetch Stage
 		# it is now so that it can do branching and jumping
 		#############################################
-		PC.input = mux(branch&jump, IF_ID.PC.output, newAddr)
-		
+		PC.input = mux(branch|jump, IF_ID.PC.input, newAddr)		
+
 		
 		#############################################
 		#This is the Execute Stage
 		#############################################
 		EX_MEM.ALUResult.input = alu(ID_EX.EX.ALUOp.output, ID_EX.regData1.output, mux(ID_EX.EX.ALUSrc.output, ID_EX.regData2.output, ID_EX.rs.output))
 		
-		EX_MEM.Mem.input = ID_EX.Mem.output
-		EX_MEM.WB.input = ID_EX.WB.output
+		EX_MEM.Mem.MemRead.input = ID_EX.Mem.MemRead.output
+		EX_MEM.Mem.MemWrite.input = ID_EX.Mem.MemWrite.output
+		EX_MEM.WB.MemtoReg.input = ID_EX.WB.MemtoReg.output
+		EX_MEM.WB.RegWrite.input = ID_EX.WB.RegWrite.output
 		EX_MEM.regData2.input = ID_EX.regData2.output
 		EX_MEM.regWriteAddr.input = ID_EX.rs.output		
 		
@@ -139,13 +145,17 @@ def simulateProcessor(a_instrcMem, a_dataMem):
 		#############################################
 		#This is the Memory Stage
 		#############################################
-		MEM_WB.readData.input = MemAccess(EX_MEM.Mem.MemWrite, EX_MEM.Mem.MemRead, EX_MEM.ALUResult.output, EX_MEM.regData2.output, a_dataMem)
+		MEM_WB.readData.input = MemAccess(EX_MEM.Mem.MemWrite.output, EX_MEM.Mem.MemRead.output, EX_MEM.ALUResult.output, EX_MEM.regData2.output, a_dataMem)
 		
+		MEM_WB.WB.MemtoReg.input = EX_MEM.WB.MemtoReg.output
+		MEM_WB.WB.RegWrite.input = EX_MEM.WB.RegWrite.output
+		MEM_WB.regWriteAddr.input = EX_MEM.regWriteAddr.output
+		MEM_WB.ALUResult.input = EX_MEM.ALUResult.output
+		MEM_WB.regWriteAddr.input = EX_MEM.regWriteAddr.output
 		
 		#############################################
 		#This is the Write Back Stage
 		#############################################
-		
 		
 		
 		PC.clkRaiseEdge()
@@ -154,17 +164,25 @@ def simulateProcessor(a_instrcMem, a_dataMem):
 		EX_MEM .clkRaiseEdge()
 		MEM_WB.clkRaiseEdge()
 		
-		PC.printReg()
-		IF_ID.printReg()
-		ID_EX.printReg()
-		EX_MEM .printReg()
-		MEM_WB.printReg()
+		
+		# PC.printReg()
+		# IF_ID.printReg()
+		# ID_EX.printReg()
+		# EX_MEM .printReg()
+		# MEM_WB.printReg()
+		
+		# print(PC.output)
+		print(Registers)
+		print(a_dataMem)
+		
+		time.sleep(1)
 
-a_instrcMem = [0x8FFF, 0xB114,0x8201, 0xB228, 0x8221, 0xB224, 0x830F, 
+a_instrcMem = [0x8104, 0xB114,0x8201, 0xB228, 0x8221, 0xB224, 0x830F, 
 	0xB434, 0x8500, 0x8601, 0xB664, 0x8705, 0x6807, 0xA804, 0x0000, 
 	0xF02A, 0x0000, 0x8B01, 0x277B, 0xE560, 0x8801, 0xB888, 0x6985, 
-	0x990A, 0x0000, 0xC113, 0x3221, 0x8A0F, 0xBAA4, 0xDA60, 0xF028, 
-	0x0000, 0xB332, 0x4443, 0x8A0F, 0xDA60, 0x8662, 0xF00C, 0x0000]
+	0x990A, 0x0000, 0xC113, 0x3221, 0x8A0F, 0xBAA4, 0x8AAF, 0xBAA8,
+	0xDA60, 0xF028, 0x0000, 0xB332, 0x4443, 0x8A0F, 0xBAA4, 0x8AAF,
+	0xDA60, 0x8662,	0xF00C, 0x0000, 0x0000]
 	
 a_dataMem = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 

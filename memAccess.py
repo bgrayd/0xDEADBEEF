@@ -9,6 +9,8 @@ def MemAccess(writeEnable, readEnable, address, writeData, a_dataMem):
 	if readEnable == 1:
 		return a_dataMem[address]
 		
+	return 0
+		
 		
 	
 		
