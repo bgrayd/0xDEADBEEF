@@ -8,6 +8,14 @@ from memAccess import *
 
 import time
 
+def hazard(rt, rs, branch, memRead, regWrite, rsEX):
+        if branch == 1:
+                if ((regWrite == 1) and (rsEX == 1) and (rsEX == rs)) or (rsEX == rt):
+                        return 1
+                if ((memRead == 1) and (rt == rs)):
+                        return 1
+        return 0
+
 def alu(aluop, aluA, aluB):
 	if aluop == 0:          #Add
 		value = aluA + aluB
@@ -115,6 +123,10 @@ def simulateProcessor(a_instrcMem, a_dataMem):
 		branchAddr = (IF_ID.PC.output & 0xffff) + (rd & 0x000f)
 		jumpAddr = (((rs<<8) &0x0f00)|((rt<<4)&0x00f0)|(rd&0x000f))
 		newAddr = mux(jump, branchAddr, jumpAddr)
+		hazardDetected = hazard(ID_EX.rt.output, ID_EX.rs.output, branch, ID_EX.Mem.MemRead.output, EX_MEM.WB.RegWrite.output, EX_MEM.rs.output)
+                PC.hold(hazardDetected)
+                IF_ID.hold(hazardDetected)
+                ID_EX.flush(hazardDetected)
 		
 		ID_EX.rs.input = rs
 		ID_EX.rt.input = rt
