@@ -19,7 +19,7 @@ class register:
 		self._flush = flush
 	
 	def clkRaiseEdge(self):
-		if !self._hold:
+		if not self._hold:
 			self.output = self.input
 		if self._flush:
 			self.output = 0
