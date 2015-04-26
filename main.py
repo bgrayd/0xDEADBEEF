@@ -158,22 +158,20 @@ def simulateProcessor(a_instrcMem, a_dataMem):
 		#############################################
 		
 		
+		PC.printReg()
+		IF_ID.printReg()
+		ID_EX.printReg()
+		EX_MEM .printReg()
+		MEM_WB.printReg()
+		
 		PC.clkRaiseEdge()
 		IF_ID.clkRaiseEdge()
 		ID_EX.clkRaiseEdge()
 		EX_MEM .clkRaiseEdge()
 		MEM_WB.clkRaiseEdge()
 		
-		
-		# PC.printReg()
-		# IF_ID.printReg()
-		# ID_EX.printReg()
-		# EX_MEM .printReg()
-		# MEM_WB.printReg()
-		
 		# print(PC.output)
 		print(Registers)
-		print(a_dataMem)
 		
 		time.sleep(1)
 
@@ -182,8 +180,13 @@ a_instrcMem = [0x8104, 0xB114,0x8201, 0xB228, 0x8221, 0xB224, 0x830F,
 	0xF02A, 0x0000, 0x8B01, 0x277B, 0xE560, 0x8801, 0xB888, 0x6985, 
 	0x990A, 0x0000, 0xC113, 0x3221, 0x8A0F, 0xBAA4, 0x8AAF, 0xBAA8,
 	0xDA60, 0xF028, 0x0000, 0xB332, 0x4443, 0x8A0F, 0xBAA4, 0x8AAF,
-	0xDA60, 0x8662,	0xF00C, 0x0000, 0x0000]
+	0xDA60, 0x8662,	0xF00C, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000]
 	
-a_dataMem = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+a_dataMem = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]*10
+a_dataMem[16] = 257
+a_dataMem[18] = 272
+a_dataMem[20] = 17
+a_dataMem[22] = 240
+a_dataMem[24] = 253
 
 simulateProcessor(a_instrcMem, a_dataMem)
