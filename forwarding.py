@@ -2,21 +2,23 @@
 #Forwarding Unit
 
 
-def ForwardUnit(rd, rs, rt, MemWrite, RegWrite)
-	ForwardA = 00
-	ForwardB = 00
-	if (exeMemReg.RegWrite and exeMemReg.RegisterRd != 0)
-		if (exeMemReg.RegisterRd = instrDecodeExeReg.Register.Rs)
-			ForwardA = 10
+def ForwardUnit(EX_MEM, ID_EX, MEM_WB, MemWrite, RegWrite, ALUSrc)
+	ForwardA = 0
+	ForwardB = 0
+	
+	rx = ID_EX.rs.output if ID_EX.EX.ALUSrc else ID_EX.rd.output
+	if (EX_MEM.RegWrite.output and EX_MEM.rd.output != 0)
+		if (EX_MEM.rd.output = rx)
+			ForwardA = 2
 			
-		if (exeMemReg.RegisterRd = instrDecodeExeReg.RegisterRt)
-			ForwardB = 10
+		if (EX_MEM.rd.output = ID_EX.rt.output)
+			ForwardB = 2
 		
-	if(memWBReg.RegWrite and memWBReg.RegisterRd != 0)
-		if (memWBReg.RegisterRd = instrDecodeExeReg.RegisterRt)
-			ForwardB = 01
+	if(MEM_WB.RegWrite.output and MEM_WB.rd.output != 0)
+		if (MEM_WB.rd.output = ID_EX.rt.output)
+			ForwardB = 1
 		
-		if (memWBReg.RegisterRd = instrDecodeExeReg.RegisterRs)
-			ForwardA = 01
+		if (MEM_WB.rd.output = rx)
+			ForwardA = 1
 	
 	return (ForwardA, ForwardB)
