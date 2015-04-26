@@ -123,7 +123,7 @@ def simulateProcessor(a_instrcMem, a_dataMem):
 		branchAddr = (IF_ID.PC.output & 0xffff) + (rd & 0x000f)
 		jumpAddr = (((rs<<8) &0x0f00)|((rt<<4)&0x00f0)|(rd&0x000f))
 		newAddr = mux(jump, branchAddr, jumpAddr)
-		hazardDetected = hazard(ID_EX.rt.output, ID_EX.rs.output, branch, ID_EX.Mem.MemRead.output, EX_MEM.WB.RegWrite.output, EX_MEM.rs.output)
+		hazardDetected = hazard(ID_EX.rt.output, ID_EX.rs.output, branch, ID_EX.Mem.MemRead.output, EX_MEM.WB.RegWrite.output, EX_MEM.regWriteAddr.output)
 		PC.hold(hazardDetected)
 		IF_ID.hold(hazardDetected)
 		ID_EX.flush(hazardDetected)
