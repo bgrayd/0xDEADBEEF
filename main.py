@@ -132,7 +132,8 @@ def simulateProcessor(a_instrcMem, a_dataMem):
 		#############################################
 		#This is the Execute Stage
 		#############################################
-		EX_MEM.ALUResult.input = alu(ID_EX.EX.ALUOp.output, ID_EX.regData1.output, mux(ID_EX.EX.ALUSrc.output, ID_EX.regData2.output, ID_EX.rs.output))
+		(forwarda, forwardb) = ForwardUnit(EX_MEM, ID_EX, MEM_WB)
+		EX_MEM.ALUResult.input = alu(ID_EX.EX.ALUOp.output, mux(forwarda, ID_EX.regData1.output, EX_MEM.ALUResult.output, mux(int(MEM_WB.WB.MemtoReg.output), MEM_WB.ALUResult.output, MEM_WB.readData.output)) mux(ID_EX.EX.ALUSrc.output, mux(forwardb, ID_EX.regData2.output, EX_MEM.ALUResult.output, mux(int(MEM_WB.WB.MemtoReg.output), MEM_WB.ALUResult.output, MEM_WB.readData.output)), ID_EX.rs.output))
 		
 		EX_MEM.Mem.MemRead.input = ID_EX.Mem.MemRead.output
 		EX_MEM.Mem.MemWrite.input = ID_EX.Mem.MemWrite.output
