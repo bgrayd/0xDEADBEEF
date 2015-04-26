@@ -13,13 +13,37 @@ class memWBReg:
 		self.ALUResult = register()
 		self.regWriteAddr = register()
 		
+		self._flush = 0
+		self._hold = 0
+		
+	def hold(self, hold):
+		self._hold = hold
+		
+	def flush(self, flush):
+		self._flush = flush
+		
 	#send the raising clock edge to each register
 	def clkRaiseEdge(self):
+		self.WB.hold(self._hold)
+		
+		self.readData.hold(self._hold)
+		self.ALUResult.hold(self._hold)
+		self.regWriteAddr.hold(self._hold)
+		
+		self.WB.flush(self._flush)
+		
+		self.readData.flush(self._flush)
+		self.ALUResult.flush(self._flush)
+		self.regWriteAddr.flush(self._flush)
+		
 		self.WB.clkRaiseEdge()
 		
 		self.readData.clkRaiseEdge()
 		self.ALUResult.clkRaiseEdge()
 		self.regWriteAddr.clkRaiseEdge()
+		
+		self._flush = 0
+		self._hold = 0
 	
 	def printReg(self):
 		print("Mem/WB Registers:")
