@@ -146,7 +146,9 @@ def simulateProcessor(a_instrcMem, a_dataMem):
 		#This is the Execute Stage
 		#############################################
 		(forwarda, forwardb) = ForwardUnit(EX_MEM, ID_EX, MEM_WB)
-		EX_MEM.ALUResult.input = alu(ID_EX.EX.ALUOp.output, mux(forwarda, ID_EX.regData1.output, EX_MEM.ALUResult.output, mux(int(MEM_WB.WB.MemtoReg.output), MEM_WB.ALUResult.output, MEM_WB.readData.output)), mux(ID_EX.EX.ALUSrc.output, mux(forwardb, ID_EX.regData2.output, EX_MEM.ALUResult.output, mux(int(MEM_WB.WB.MemtoReg.output), MEM_WB.ALUResult.output, MEM_WB.readData.output)), ID_EX.rs.output))
+		aluInput1 = mux(forwardb, ID_EX.regData1.output, EX_MEM.ALUResult.output, mux(int(MEM_WB.WB.MemtoReg.output), MEM_WB.ALUResult.output, MEM_WB.readData.output))
+		aluInput2 = mux(ID_EX.EX.ALUSrc.output, mux(forwarda, ID_EX.regData2.output, EX_MEM.ALUResult.output, mux(int(MEM_WB.WB.MemtoReg.output), MEM_WB.ALUResult.output, MEM_WB.readData.output)), ID_EX.rd.output)
+		EX_MEM.ALUResult.input = alu(ID_EX.EX.ALUOp.output, aluInput1, aluInput2)
 		
 		EX_MEM.Mem.MemRead.input = ID_EX.Mem.MemRead.output
 		EX_MEM.Mem.MemWrite.input = ID_EX.Mem.MemWrite.output
@@ -184,8 +186,9 @@ def simulateProcessor(a_instrcMem, a_dataMem):
 		EX_MEM .clkRaiseEdge()
 		MEM_WB.clkRaiseEdge()
 		
-		# print(PC.output)
+		print(str(format(IF_ID.Instruction.output, '04x')))
 		print(Registers)
+
 		
 		time.sleep(1)
 
