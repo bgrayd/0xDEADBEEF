@@ -11,9 +11,9 @@ import time
 
 def hazard(rt, rs, branch, memRead, regWrite, rsEX):
         if branch == 1:
-                if ((regWrite == 1) and (rsEX == 1) and (rsEX == rs)) or (rsEX == rt):
+                if (((regWrite == 1)) and ((rsEX == rs) or (rsEX == rt))):
                         return 1
-                if ((memRead == 1) and (rt == rs)):
+                if ((memRead == 1) and ((rt == rsEX) or (rs == rsEX))):
                         return 1
         return 0
 
@@ -120,14 +120,17 @@ def simulateProcessor(a_instrcMem, a_dataMem):
 		readData1 = Registers[rt]
 		readData2 = Registers[mux(regDst, rd, rs)]
 		
+		hazardDetected = hazard(rt, rs, branch, ID_EX.Mem.MemRead.output, ID_EX.WB.RegWrite.output, ID_EX.rs.output)
+		
 		branch = ((opcode&0x1)^(readData1 == readData2)) & branch
 		branchAddr = (IF_ID.PC.output & 0xffff) + (rd & 0x000f)
 		jumpAddr = (((rs<<8) &0x0f00)|((rt<<4)&0x00f0)|(rd&0x000f))
 		newAddr = mux(jump, branchAddr, jumpAddr)
-		hazardDetected = hazard(ID_EX.rt.output, ID_EX.rs.output, branch, ID_EX.Mem.MemRead.output, EX_MEM.WB.RegWrite.output, EX_MEM.regWriteAddr.output)
+		
 		PC.hold(hazardDetected)
 		IF_ID.hold(hazardDetected)
 		ID_EX.flush(hazardDetected)
+		print(str(PC.output)+":"+str(hazardDetected))
 		
 		ID_EX.rs.input = rs
 		ID_EX.rt.input = rt
@@ -188,12 +191,19 @@ def simulateProcessor(a_instrcMem, a_dataMem):
 		
 		print(str(format(IF_ID.Instruction.output, '04x')))
 		print(Registers)
+		
+		# file1 = open("registers.csv",'a')
+		# file1.write(str(format(IF_ID.Instruction.output, '04x')))
+		# for each in Registers:
+			# file1.write(','+str(each))
+		# file1.write('\n')
+		# file1.close()
 
 		
-		time.sleep(1)
+		time.sleep(.5)
 
 a_instrcMem = [0x8104, 0xB114,0x8201, 0xB228, 0x8221, 0xB224, 0x830F, 
-	0xB434, 0x8500, 0x8601, 0xB664, 0x8705, 0x6807, 0xA804, 0x0000, 
+	0xB434, 0x8500, 0x8601, 0xB664, 0x8705, 0x6807, 0x9803, 0x0000, 
 	0xF02C, 0x0000, 0x8B01, 0x277B, 0xE560, 0x8801, 0xB888, 0x6985, 
 	0x990B, 0x0000, 0xC113, 0x3221, 0x8A0F, 0xBAA4, 0x8AAF, 0xBAA8,
 	0x0000, 0xDA60, 0xF02A, 0x0000, 0xB332, 0x4443, 0x8A0F, 0xBAA4, 
