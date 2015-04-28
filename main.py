@@ -15,7 +15,7 @@ def hazard(rt, rs, branch, memRead, IDEXregWrite, EXMEMregWrite, rsEX, regWriteA
                         return 1
                 if ((memRead == 1) and ((rt == rsEX) or (rs == rsEX))):
                         return 1
-                if ((EXMEMregWrite == 1) and ((rt == rsEX) or (rs == rsEX))):
+                if ((EXMEMregWrite == 1) and ((rt == regWriteAddr) or (rs == regWriteAddr))):
                         return 1
         return 0
 
@@ -39,7 +39,6 @@ def alu(aluop, aluA, aluB):
 		value = aluA << aluB
 	elif aluop == 7:     #>>
 		value = aluA >> aluB
-	# print("ALUOp:"+str(aluop)+" ALUa:"+str(aluA)+" ALUb:"+str(aluB)+" value:"+str(value))
 	return value
 
 def mux(controlSignal, *inputs):
@@ -79,13 +78,14 @@ def control(opcode):
 		0b1110:(0,0,1,0,1,1,0,1,1), #lw
 		0b1111:(1,0,1,0,0,0,0,0,0),	#j
 		}
-	# print(str(opcode)+":"+str(Instructions[opcode]))
 	return Instructions[opcode]
 	
 	
 def simulateProcessor(a_instrcMem, a_dataMem):
 	#initialize Control signals that aren't buffered
 	PCSrc = 0
+	
+	clockCycle = 0
 	
 	#initialize registers
 	PC = register()
@@ -96,6 +96,7 @@ def simulateProcessor(a_instrcMem, a_dataMem):
 	Registers = [0]*16		#There are 16 different registers
 	
 	while(1):
+		clockCycle += 1
 		#############################################
 		#This is the Instruction Fetch Stage
 		#############################################
@@ -108,7 +109,6 @@ def simulateProcessor(a_instrcMem, a_dataMem):
 		#############################################
 		if(MEM_WB.WB.RegWrite.output == 1):
 			Registers[int(MEM_WB.regWriteAddr.output)] = mux(int(MEM_WB.WB.MemtoReg.output), MEM_WB.ALUResult.output, MEM_WB.readData.output)
-			# print(str(int(MEM_WB.regWriteAddr.output))+" : "+str(mux(int(MEM_WB.WB.MemtoReg.output), MEM_WB.ALUResult.output, MEM_WB.readData.output)))
 		
 		#############################################
 		#This is the Instruction Decode Stage
@@ -132,7 +132,6 @@ def simulateProcessor(a_instrcMem, a_dataMem):
 		PC.hold(hazardDetected)
 		IF_ID.hold(hazardDetected)
 		ID_EX.flush(hazardDetected)
-		print(str(PC.output)+":"+str(hazardDetected))
 		
 		ID_EX.rs.input = rs
 		ID_EX.rt.input = rt
@@ -159,7 +158,7 @@ def simulateProcessor(a_instrcMem, a_dataMem):
 		EX_MEM.Mem.MemWrite.input = ID_EX.Mem.MemWrite.output
 		EX_MEM.WB.MemtoReg.input = ID_EX.WB.MemtoReg.output
 		EX_MEM.WB.RegWrite.input = ID_EX.WB.RegWrite.output
-		EX_MEM.regData2.input = ID_EX.regData2.output
+		EX_MEM.regData2.input = mux(forwarda, ID_EX.regData2.output, EX_MEM.ALUResult.output, mux(int(MEM_WB.WB.MemtoReg.output), MEM_WB.ALUResult.output, MEM_WB.readData.output))
 		EX_MEM.regWriteAddr.input = ID_EX.rs.output		
 		
 		
@@ -178,7 +177,7 @@ def simulateProcessor(a_instrcMem, a_dataMem):
 		#This is the Write Back Stage
 		#############################################
 		
-		
+		print("Clock Cycle: "+str(clockCycle))
 		PC.printReg()
 		IF_ID.printReg()
 		ID_EX.printReg()
@@ -191,32 +190,28 @@ def simulateProcessor(a_instrcMem, a_dataMem):
 		EX_MEM .clkRaiseEdge()
 		MEM_WB.clkRaiseEdge()
 		
-		print(str(format(IF_ID.Instruction.output, '04x')))
-		print(Registers)
-		
-		# file1 = open("registers.csv",'a')
-		# file1.write(str(format(IF_ID.Instruction.output, '04x')))
-		# for each in Registers:
-			# file1.write(','+str(each))
-		# file1.write('\n')
-		# file1.close()
+		print("Registers:"+str(Registers))
+		print("Data Mem[16:24]] "+str(a_dataMem[16])+','+str(a_dataMem[18])+','+str(a_dataMem[20])+','+str(a_dataMem[22])+','+str(a_dataMem[24]))
+		print("")
+		print("")
 
 		
-		time.sleep(.5)
+		time.sleep(.25)
 
 a_instrcMem = [0x8104, 0xB114,0x8201, 0xB228, 0x8221, 0xB224, 0x830F, 
 	0xB434, 0x8500, 0x8601, 0xB664, 0x8705, 0x6807, 0x9803, 0x0000, 
 	0xF02C, 0x0000, 0x8B01, 0x277B, 0xE560, 0x8801, 0xB888, 0x6985, 
-	0x990B, 0x0000, 0xC113, 0x3221, 0x8A0F, 0xBAA4, 0x8AAF, 0xBAA8,
+	0xA90B, 0x0000, 0xC113, 0x3221, 0x8A0F, 0xBAA4, 0x8AAF, 0xBAA8,
 	0x0000, 0xDA60, 0xF02A, 0x0000, 0xB332, 0x4443, 0x8A0F, 0xBAA4, 
 	0x8AAF, 0x0000,	0xDA60, 0x8662,	0xF00C, 0x0000, 0x0000, 0x0000,
-	0x0000, 0x0000]
+	0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000]
+	
 	
 a_dataMem = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]*10
 a_dataMem[16] = 257
 a_dataMem[18] = 272
 a_dataMem[20] = 17
 a_dataMem[22] = 240
-a_dataMem[24] = 253
+a_dataMem[24] = 255
 
 simulateProcessor(a_instrcMem, a_dataMem)
