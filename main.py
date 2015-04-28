@@ -9,11 +9,13 @@ from forwarding import *
 
 import time
 
-def hazard(rt, rs, branch, memRead, regWrite, rsEX):
+def hazard(rt, rs, branch, memRead, IDEXregWrite, EXMEMregWrite, rsEX, regWriteAddr):
         if branch == 1:
-                if (((regWrite == 1)) and ((rsEX == rs) or (rsEX == rt))):
+                if ((IDEXregWrite == 1) and ((rt == rsEX) or (rs == rsEX))):
                         return 1
                 if ((memRead == 1) and ((rt == rsEX) or (rs == rsEX))):
+                        return 1
+                if ((EXMEMregWrite == 1) and ((rt == rsEX) or (rs == rsEX))):
                         return 1
         return 0
 
@@ -120,7 +122,7 @@ def simulateProcessor(a_instrcMem, a_dataMem):
 		readData1 = Registers[rt]
 		readData2 = Registers[mux(regDst, rd, rs)]
 		
-		hazardDetected = hazard(rt, rs, branch, ID_EX.Mem.MemRead.output, ID_EX.WB.RegWrite.output, ID_EX.rs.output)
+		hazardDetected = hazard(rt, rs, branch, ID_EX.Mem.MemRead.output, ID_EX.WB.RegWrite.output, EX_MEM.WB.RegWrite.output, ID_EX.rs.output, EX_MEM.regWriteAddr.output)
 		
 		branch = ((opcode&0x1)^(readData1 == readData2)) & branch
 		branchAddr = (IF_ID.PC.output & 0xffff) + (rd & 0x000f)
